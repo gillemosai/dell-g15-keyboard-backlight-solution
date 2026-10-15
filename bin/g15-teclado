@@ -1,0 +1,252 @@
+#!/usr/bin/env bash
+# g15-teclado — controla a luz do teclado do Dell G15 no Linux
+# Projeto: https://github.com/gillemosai/dell-g15-keyboard-linux
+#
+# Uso:
+#   g15-teclado                 abre a janela para escolher a cor
+#   g15-teclado --cor 0x0000FF  aplica uma cor específica (formato 0xRRGGBB)
+#   g15-teclado --auto          reaplica a última cor escolhida
+#   g15-teclado --desligar      apaga a luz do teclado
+#   g15-teclado --diagnostico   mostra informações do sistema para relatar problemas
+#   g15-teclado --ajuda         mostra esta ajuda
+
+set -u
+
+APP_DIR="${G15_APP_DIR:-$HOME/.local/share/g15-teclado}"
+CONTROLLER="$APP_DIR/controller/src/main.py"
+CONF_DIR="$HOME/.config/g15-teclado"
+CONF_COR="$CONF_DIR/cor"
+CONF_MODO="$CONF_DIR/modo"          # rgb | branco
+COR_PADRAO="0x0000FF"
+
+mkdir -p "$CONF_DIR" 2>/dev/null
+
+modo() { cat "$CONF_MODO" 2>/dev/null || echo "rgb"; }
+
+notificar() {
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -i input-keyboard "Teclado G15" "$1" 2>/dev/null &
+  fi
+}
+
+erro() {
+  if command -v zenity >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    zenity --error --title="Teclado G15" --text="$1" 2>/dev/null
+  elif command -v kdialog >/dev/null 2>&1 && [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    kdialog --error "$1" --title "Teclado G15" 2>/dev/null
+  fi
+  echo "Erro: $1" >&2
+}
+
+validar_cor() {
+  [[ "$1" =~ ^0x[0-9A-Fa-f]{6}$ ]]
+}
+
+# ---- Teclados RGB (controlador Alienware 187c:0550) ----
+aplicar_rgb() {
+  local cor="$1"
+  if [ ! -f "$CONTROLLER" ]; then
+    erro "Controlador não encontrado em $CONTROLLER. Rode o install.sh novamente."
+    return 1
+  fi
+  if python3 "$CONTROLLER" -s "$cor" >/dev/null 2>&1; then
+    return 0
+  fi
+  # Sem permissão USB (ex.: regra udev ainda não carregada) -> pede senha
+  if command -v pkexec >/dev/null 2>&1; then
+    pkexec python3 "$CONTROLLER" -s "$cor"
+  else
+    sudo python3 "$CONTROLLER" -s "$cor"
+  fi
+}
+
+# ---- Teclados de luz branca (dell::kbd_backlight) ----
+aplicar_branco() {
+  local cor="$1" led="/sys/class/leds/dell::kbd_backlight"
+  [ -d "$led" ] || { erro "Controle de luz do teclado não encontrado."; return 1; }
+  local max nivel
+  max=$(cat "$led/max_brightness")
+  if [ "$cor" = "0x000000" ]; then nivel=0; else nivel=$max; fi
+  if ! echo "$nivel" > "$led/brightness" 2>/dev/null; then
+    if command -v pkexec >/dev/null 2>&1; then
+      pkexec sh -c "echo $nivel > '$led/brightness'"
+    else
+      echo "$nivel" | sudo tee "$led/brightness" >/dev/null
+    fi
+  fi
+}
+
+aplicar() {
+  local cor="$1"
+  if [ "$(modo)" = "branco" ]; then
+    aplicar_branco "$cor"
+  else
+    aplicar_rgb "$cor"
+  fi
+}
+
+# ---- Janela de escolha ----
+CORES=(
+  "Azul"         0x0000FF
+  "Azul claro"   0x00AAFF
+  "Ciano"        0x00FFFF
+  "Roxo"         0x7733FF
+  "Rosa"         0xFF00AA
+  "Vermelho"     0xFF0000
+  "Laranja"      0xFF5500
+  "Amarelo"      0xFFCC00
+  "Verde"        0x00FF00
+  "Branco"       0xFFFFFF
+  "Desligar luz" 0x000000
+  "Outra cor..." OUTRA
+)
+
+rgb_para_hex() {
+  # "rgb(r,g,b)" ou "#RRGGBB" -> 0xRRGGBB
+  local entrada="$1"
+  if [[ "$entrada" =~ ^#([0-9A-Fa-f]{6}) ]]; then
+    echo "0x${BASH_REMATCH[1]^^}"
+    return
+  fi
+  local nums
+  nums=$(echo "$entrada" | grep -oE '[0-9]+' | head -3 | tr '\n' ' ')
+  # shellcheck disable=SC2086
+  printf '0x%02X%02X%02X' $nums
+}
+
+escolher_zenity() {
+  local args=() i atual
+  atual=$(cat "$CONF_COR" 2>/dev/null || echo "$COR_PADRAO")
+  for ((i = 0; i < ${#CORES[@]}; i += 2)); do
+    if [ "${CORES[i+1]}" = "$atual" ]; then args+=(TRUE); else args+=(FALSE); fi
+    args+=("${CORES[i]}" "${CORES[i+1]}")
+  done
+  local escolha
+  escolha=$(zenity --list --radiolist --title="Cor do Teclado" \
+    --text="Escolha a cor do teclado:" --width=320 --height=500 \
+    --column="" --column="Cor" --column="Código" "${args[@]}" \
+    --print-column=3 2>/dev/null) || return 1
+  if [ "$escolha" = "OUTRA" ]; then
+    local rgb
+    rgb=$(zenity --color-selection --title="Escolha qualquer cor" 2>/dev/null) || return 1
+    escolha=$(rgb_para_hex "$rgb")
+  fi
+  echo "$escolha"
+}
+
+escolher_kdialog() {
+  local args=() i atual
+  atual=$(cat "$CONF_COR" 2>/dev/null || echo "$COR_PADRAO")
+  for ((i = 0; i < ${#CORES[@]}; i += 2)); do
+    args+=("${CORES[i+1]}" "${CORES[i]}")
+    if [ "${CORES[i+1]}" = "$atual" ]; then args+=(on); else args+=(off); fi
+  done
+  local escolha
+  escolha=$(kdialog --title "Cor do Teclado" \
+    --radiolist "Escolha a cor do teclado:" "${args[@]}" 2>/dev/null) || return 1
+  if [ "$escolha" = "OUTRA" ]; then
+    local rgb
+    rgb=$(kdialog --getcolor --title "Escolha qualquer cor" 2>/dev/null) || return 1
+    escolha=$(rgb_para_hex "$rgb")
+  fi
+  echo "$escolha"
+}
+
+escolher_terminal() {
+  local i n=1
+  {
+    echo "Escolha a cor do teclado:"
+    for ((i = 0; i < ${#CORES[@]} - 2; i += 2)); do
+      printf '  %2d) %s\n' "$n" "${CORES[i]}"
+      n=$((n + 1))
+    done
+    echo "  ou digite um código no formato 0xRRGGBB"
+  } >&2
+  read -r -p "> " resp
+  if [[ "$resp" =~ ^[0-9]+$ ]] && [ "$resp" -ge 1 ] && [ "$resp" -lt "$n" ]; then
+    echo "${CORES[(resp - 1) * 2 + 1]}"
+  else
+    echo "$resp"
+  fi
+}
+
+escolher() {
+  local tem_tela="${DISPLAY:-}${WAYLAND_DISPLAY:-}"
+  if [ -n "$tem_tela" ] && [ "${XDG_CURRENT_DESKTOP:-}" = "KDE" ] && command -v kdialog >/dev/null 2>&1; then
+    escolher_kdialog
+  elif [ -n "$tem_tela" ] && command -v zenity >/dev/null 2>&1; then
+    escolher_zenity
+  elif [ -n "$tem_tela" ] && command -v kdialog >/dev/null 2>&1; then
+    escolher_kdialog
+  else
+    escolher_terminal
+  fi
+}
+
+diagnostico() {
+  echo "=== Diagnóstico g15-teclado ==="
+  echo "Modelo:      $(cat /sys/class/dmi/id/product_name 2>/dev/null || echo '?')"
+  echo "BIOS:        $(cat /sys/class/dmi/id/bios_version 2>/dev/null || echo '?')"
+  echo "Sistema:     $(. /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-?}")"
+  echo "Kernel:      $(uname -r)"
+  echo "Ambiente:    ${XDG_CURRENT_DESKTOP:-?} (${XDG_SESSION_TYPE:-?})"
+  echo "Vídeo:"
+  if command -v lspci >/dev/null 2>&1; then
+    lspci 2>/dev/null | grep -Ei 'vga|3d|display' | sed 's/^/  /'
+  else
+    echo "  (lspci não instalado)"
+  fi
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "Driver NVIDIA: $(nvidia-smi --query-gpu=driver_version --format=csv,noheader 2>/dev/null | head -1)"
+  fi
+  echo "Controlador de luz (USB):"
+  if command -v lsusb >/dev/null 2>&1; then
+    lsusb 2>/dev/null | grep -i '187c' | sed 's/^/  /' || true
+    lsusb 2>/dev/null | grep -qi '187c' || echo "  nenhum dispositivo Alienware 187c encontrado"
+  else
+    echo "  (lsusb não instalado)"
+  fi
+  echo "LEDs do sistema: $(ls /sys/class/leds/ 2>/dev/null | tr '\n' ' ')"
+  echo "Modo configurado: $(modo)"
+  echo "Última cor:  $(cat "$CONF_COR" 2>/dev/null || echo 'nenhuma')"
+  echo "Controlador: $([ -f "$CONTROLLER" ] && echo "instalado" || echo "NÃO instalado")"
+  echo "Regra udev:  $([ -f /etc/udev/rules.d/60-g15-teclado.rules ] && echo "instalada" || echo "NÃO instalada")"
+}
+
+ajuda() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; }
+
+# ---- Programa principal ----
+case "${1:-}" in
+  --auto)
+    aplicar "$(cat "$CONF_COR" 2>/dev/null || echo "$COR_PADRAO")"
+    ;;
+  --cor)
+    cor="${2:-}"
+    validar_cor "$cor" || { erro "Cor inválida: '$cor'. Use o formato 0xRRGGBB (ex.: 0x0000FF)."; exit 1; }
+    aplicar "$cor" && echo "$cor" > "$CONF_COR"
+    ;;
+  --desligar)
+    aplicar 0x000000
+    ;;
+  --diagnostico)
+    diagnostico
+    ;;
+  --ajuda|-h|--help)
+    ajuda
+    ;;
+  "")
+    cor=$(escolher) || exit 0
+    [ -z "$cor" ] && exit 0
+    validar_cor "$cor" || { erro "Cor inválida: '$cor'. Use o formato 0xRRGGBB."; exit 1; }
+    if aplicar "$cor"; then
+      echo "$cor" > "$CONF_COR"
+      notificar "Cor aplicada: $cor"
+    else
+      erro "Não foi possível mudar a cor. Rode 'g15-teclado --diagnostico' e abra uma issue no GitHub."
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Opção desconhecida: $1"; ajuda; exit 1
+    ;;
+esac
