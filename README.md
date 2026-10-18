@@ -18,6 +18,8 @@
 
 © 2026 **Gil Lemos** · [gillemosai.com](https://gillemosai.com)
 
+<img src="docs/demo.gif" alt="Teclado do Dell G15 passando de apagado para vermelho e azul" width="720">
+
 </div>
 
 ---
