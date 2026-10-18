@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⌨️ dell-g15-keyboard-backlight
+# ⌨️ dell-g15-keyboard-backlight-solution
 
 **A luz do teclado do seu Dell G15 apagou — no Windows ou no Linux? Este projeto acende de volta e deixa você escolher a cor com um clique.**
 
@@ -10,8 +10,8 @@
 [![Dell G15](https://img.shields.io/badge/Dell-G15-007DB8?logo=dell&logoColor=white)](#-compatibilidade)
 [![Python](https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white)](#-créditos)
 [![PRs bem-vindos](https://img.shields.io/badge/PRs-bem--vindos-brightgreen.svg)](#-como-contribuir)
-[![Stars](https://img.shields.io/github/stars/gillemosai/dell-g15-keyboard-backlight?style=social)](https://github.com/gillemosai/dell-g15-keyboard-backlight/stargazers)
-[![Último commit](https://img.shields.io/github/last-commit/gillemosai/dell-g15-keyboard-backlight)](https://github.com/gillemosai/dell-g15-keyboard-backlight/commits)
+[![Stars](https://img.shields.io/github/stars/gillemosai/dell-g15-keyboard-backlight-solution?style=social)](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/stargazers)
+[![Último commit](https://img.shields.io/github/last-commit/gillemosai/dell-g15-keyboard-backlight-solution)](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/commits)
 [![Site](https://img.shields.io/badge/site-gillemosai.com-6C3BFF)](https://gillemosai.com)
 
 [Windows](#-windows) · [Linux](#-linux) · [Compatibilidade](#-compatibilidade) · [Problemas](#-solução-de-problemas) · [English](#-english)
@@ -69,8 +69,8 @@ Um instalador que **identifica sozinho** o seu notebook, o sistema e o tipo de l
 Abra o terminal e rode:
 
 ```bash
-git clone https://github.com/gillemosai/dell-g15-keyboard-backlight
-cd dell-g15-keyboard-backlight
+git clone https://github.com/gillemosai/dell-g15-keyboard-backlight-solution
+cd dell-g15-keyboard-backlight-solution
 bash install.sh
 ```
 
@@ -148,7 +148,7 @@ Feche o Alienware Command Center. Se continuar, encerre também os serviços Ali
 <details>
 <summary><b>Não dá erro, mas a luz não acende</b></summary>
 
-Rode `python g15_teclado_windows.py --diagnostico`. O script testa os métodos de comunicação e escolhe sozinho o que o teclado responder (no G15 5511 é o método 2). Se nenhum responder, teste cada um à mão, por exemplo `python g15_teclado_windows.py --metodo 1 --acender`, e [abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight/issues/new?template=relatar-problema.md) com o resultado do diagnóstico.
+Rode `python g15_teclado_windows.py --diagnostico`. O script testa os métodos de comunicação e escolhe sozinho o que o teclado responder (no G15 5511 é o método 2). Se nenhum responder, teste cada um à mão, por exemplo `python g15_teclado_windows.py --metodo 1 --acender`, e [abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/issues/new?template=relatar-problema.md) com o resultado do diagnóstico.
 </details>
 
 <details>
@@ -162,7 +162,7 @@ O Python não está instalado ou não está no PATH. Reinstale marcando **Add Py
 <details>
 <summary><b>O teclado não acendeu depois da instalação</b></summary>
 
-Reinicie o computador (para a regra de permissão valer) e abra **Cor do Teclado**. Se ainda não funcionar, rode `g15-teclado --diagnostico` e [abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight/issues/new?template=relatar-problema.md) com o resultado.
+Reinicie o computador (para a regra de permissão valer) e abra **Cor do Teclado**. Se ainda não funcionar, rode `g15-teclado --diagnostico` e [abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/issues/new?template=relatar-problema.md) com o resultado.
 </details>
 
 <details>
@@ -189,7 +189,7 @@ Toda ajuda é bem-vinda, principalmente **relatos de outros modelos**:
 
 1. Instale e teste no seu G15 (Windows ou Linux)
 2. Rode o diagnóstico (`g15-teclado --diagnostico` no Linux, `python g15_teclado_windows.py --diagnostico` no Windows)
-3. [Abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight/issues) dizendo se funcionou ou não
+3. [Abra uma issue](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/issues) dizendo se funcionou ou não
 
 Pull requests com suporte a novos modelos, distribuições ou traduções também são bem-vindos.
 
@@ -210,8 +210,8 @@ Este projeto adiciona a detecção automática, o instalador multi-distro, o sel
 **Linux:** auto-detects your model, distro and backlight controller, installs everything needed and adds a **"Keyboard Color"** app with a color picker. It re-applies your color on login and after suspend, and works without asking for your password each time.
 
 ```bash
-git clone https://github.com/gillemosai/dell-g15-keyboard-backlight
-cd dell-g15-keyboard-backlight
+git clone https://github.com/gillemosai/dell-g15-keyboard-backlight-solution
+cd dell-g15-keyboard-backlight-solution
 bash install.sh
 ```
 
