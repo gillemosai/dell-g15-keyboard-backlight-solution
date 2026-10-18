@@ -33,13 +33,23 @@ Este projeto fala **direto com o chip do teclado**, sem depender do AWCC. A cor 
 
 Testado no **Dell G15 5511** com **Windows 11**.
 
+### Opção 1: programa pronto (sem instalar nada)
+
+**1.** Baixe o **[G15-Teclado.exe](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/releases/latest/download/G15-Teclado.exe)** (ou veja todas as versões em [Releases](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/releases/latest)).
+
+**2.** **Feche o Alienware Command Center** e dê dois cliques no arquivo. Escolha a cor — em alguns segundos a luz acende.
+
+> ⚠️ **O Windows pode mostrar o aviso "O Windows protegeu seu PC" (SmartScreen).** Isso acontece com qualquer programa pequeno e sem assinatura digital paga, e **não significa que o arquivo é perigoso**. Para abrir, clique em **Mais informações** e depois em **Executar assim mesmo**. O código-fonte está neste repositório e o `.exe` é gerado automaticamente pelo [GitHub Actions](.github/workflows/build-windows.yml), então você pode conferir tudo.
+
+### Opção 2: com Python (cria um atalho na Área de Trabalho)
+
 **1.** Baixe este repositório (botão **Code > Download ZIP**) e extraia a pasta.
 
 **2.** Abra a pasta `windows` e dê dois cliques em **`instalar.bat`**. Ele instala a biblioteca necessária (`hidapi`) e cria o atalho **Cor do Teclado** na Área de Trabalho.
 
 > Precisa do [Python 3](https://www.python.org/downloads/) instalado (marque **Add Python to PATH** na instalação). Se não tiver, o `instalar.bat` avisa e abre a página de download.
 
-**3.** **Feche o Alienware Command Center** e abra o atalho **Cor do Teclado**. Escolha a cor — em alguns segundos a luz acende.
+**3.** **Feche o Alienware Command Center** e abra o atalho **Cor do Teclado**.
 
 **Pelo terminal** (PowerShell, dentro da pasta `windows`):
 
@@ -208,7 +218,7 @@ Este projeto adiciona a detecção automática, o instalador multi-distro, o sel
 
 **Dell G15 keyboard backlight not working — on Windows or Linux?** This project talks directly to the keyboard's controller chip (`187c:0550`), without depending on Alienware Command Center. The color is stored in the keyboard itself, so it survives reboots.
 
-**Windows 11:** download the repo, run `windows/instalar.bat` (needs Python 3), close Alienware Command Center and open the **Cor do Teclado** shortcut. Or from PowerShell: `python windows/g15_teclado_windows.py --cor 0x00AAFF`. Use `--diagnostico` if the light does not turn on.
+**Windows 11:** download [G15-Teclado.exe](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/releases/latest/download/G15-Teclado.exe) (if SmartScreen warns, click *More info > Run anyway* — the exe is unsigned), or download the repo, run `windows/instalar.bat` (needs Python 3), close Alienware Command Center and open the **Cor do Teclado** shortcut. Or from PowerShell: `python windows/g15_teclado_windows.py --cor 0x00AAFF`. Use `--diagnostico` if the light does not turn on.
 
 **Linux:** auto-detects your model, distro and backlight controller, installs everything needed and adds a **"Keyboard Color"** app with a color picker. It re-applies your color on login and after suspend, and works without asking for your password each time.
 
