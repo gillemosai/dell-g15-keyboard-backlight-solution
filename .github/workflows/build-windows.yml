@@ -1,0 +1,37 @@
+name: Gerar executável do Windows
+
+# Roda ao criar uma tag (ex.: v1.0.0) ou manualmente na aba Actions.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependências
+        run: python -m pip install hidapi pyinstaller
+
+      - name: Gerar o .exe (janela de cores, sem console)
+        run: pyinstaller --onefile --noconsole --name G15-Teclado windows/g15_teclado_windows.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: G15-Teclado-windows
+          path: dist/G15-Teclado.exe
+
+      - name: Anexar à Release (só em tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/G15-Teclado.exe

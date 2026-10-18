@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Instalador do g15-teclado — luz do teclado do Dell G15 no Linux
-# Projeto: https://github.com/gillemosai/dell-g15-keyboard-linux
+# Projeto: https://github.com/gillemosai/dell-g15-keyboard-backlight
 #
 # Uso:  bash install.sh          (pergunta antes de instalar)
 #       bash install.sh -y       (instala sem perguntar)
