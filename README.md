@@ -16,6 +16,8 @@
 
 [Windows](#-windows) · [Linux](#-linux) · [Compatibilidade](#-compatibilidade) · [Problemas](#-solução-de-problemas) · [English](#-english)
 
+© 2026 **Gil Lemos** · [gillemosai.com](https://gillemosai.com)
+
 </div>
 
 ---
