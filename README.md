@@ -12,7 +12,6 @@
 [![PRs bem-vindos](https://img.shields.io/badge/PRs-bem--vindos-brightgreen.svg)](#-como-contribuir)
 [![Stars](https://img.shields.io/github/stars/gillemosai/dell-g15-keyboard-backlight-solution?style=social)](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/stargazers)
 [![Último commit](https://img.shields.io/github/last-commit/gillemosai/dell-g15-keyboard-backlight-solution)](https://github.com/gillemosai/dell-g15-keyboard-backlight-solution/commits)
-[![Site](https://img.shields.io/badge/site-gillemosai.com-6C3BFF)](https://gillemosai.com)
 
 [Windows](#-windows) · [Linux](#-linux) · [Compatibilidade](#-compatibilidade) · [Problemas](#-solução-de-problemas) · [English](#-english)
 
